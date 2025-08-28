@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ShoppingCart, User, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SearchBar from "./SearchBar"
-import Link from "next/link"   // ✅ Import Next.js Link
+import Link from "next/link"   
 
 interface NavbarProps {
   cartItemCount?: number

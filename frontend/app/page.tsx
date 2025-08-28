@@ -71,7 +71,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar cartItemCount={cartItems.length} onSearch={handleSearch} />
-
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
