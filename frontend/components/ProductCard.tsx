@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { useState } from "react"
@@ -7,7 +8,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export interface Product {
-  id: number
+  id: string
   name: string
   price: number
   originalPrice?: number
@@ -16,6 +17,7 @@ export interface Product {
   rating?: number
   inStock: boolean
 }
+
 
 interface ProductCardProps {
   product: Product

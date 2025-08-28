@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ShoppingCart, User, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SearchBar from "./SearchBar"
+import Link from "next/link"   // ✅ Import Next.js Link
 
 interface NavbarProps {
   cartItemCount?: number
@@ -19,21 +20,21 @@ export default function Navbar({ cartItemCount = 0, onSearch }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold">Swadeshi Mart</h1>
+            <Link href="/" className="text-2xl font-bold">Swadeshi Mart</Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              <a href="#" className="hover:bg-primary/80 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <Link href="/" className="hover:bg-primary/80 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Home
-              </a>
-              <a href="#" className="hover:bg-primary/80 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              </Link>
+              <Link href="/products" className="hover:bg-primary/80 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Products
-              </a>
-              <a href="#" className="hover:bg-primary/80 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              </Link>
+              <Link href="/categories" className="hover:bg-primary/80 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Categories
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -49,15 +50,17 @@ export default function Navbar({ cartItemCount = 0, onSearch }: NavbarProps) {
               <span className="hidden sm:ml-2 sm:inline">Login</span>
             </Button>
 
-            <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/80 relative">
-              <ShoppingCart className="h-5 w-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-              <span className="hidden sm:ml-2 sm:inline">Cart</span>
-            </Button>
+            <Link href="/cart">
+              <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/80 relative">
+                <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
+                <span className="hidden sm:ml-2 sm:inline">Cart</span>
+              </Button>
+            </Link>
 
             {/* Mobile menu button */}
             <div className="md:hidden">
@@ -83,15 +86,15 @@ export default function Navbar({ cartItemCount = 0, onSearch }: NavbarProps) {
       {isMobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 bg-primary/95">
-            <a href="#" className="block hover:bg-primary/80 px-3 py-2 rounded-md text-base font-medium">
+            <Link href="/" className="block hover:bg-primary/80 px-3 py-2 rounded-md text-base font-medium">
               Home
-            </a>
-            <a href="#" className="block hover:bg-primary/80 px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link href="/products" className="block hover:bg-primary/80 px-3 py-2 rounded-md text-base font-medium">
               Products
-            </a>
-            <a href="#" className="block hover:bg-primary/80 px-3 py-2 rounded-md text-base font-medium">
+            </Link>
+            <Link href="/categories" className="block hover:bg-primary/80 px-3 py-2 rounded-md text-base font-medium">
               Categories
-            </a>
+            </Link>
           </div>
         </div>
       )}

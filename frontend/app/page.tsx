@@ -1,112 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import ProductCard, { type Product } from "@/components/ProductCard"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-// Sample product data
-const sampleProducts: Product[] = [
-  {
-    id: 1,
-    name: "Wireless Bluetooth Headphones",
-    price: 6499.99,
-    originalPrice: 7999.99,
-    image: "/placeholder-nb6yc.png",
-    category: "Electronics",
-    rating: 4.5,
-    inStock: true,
-  },
-  {
-    id: 2,
-    name: "Premium Cotton T-Shirt",
-    price: 1999.99,
-    image: "/premium-cotton-t-shirt.png",
-    category: "Clothing",
-    rating: 4.2,
-    inStock: true,
-  },
-  {
-    id: 3,
-    name: "Smart Fitness Watch",
-    price: 16499.99,
-    originalPrice: 20499.99,
-    image: "/smart-fitness-watch.png",
-    category: "Electronics",
-    rating: 4.7,
-    inStock: true,
-  },
-  {
-    id: 4,
-    name: "Organic Coffee Beans",
-    price: 1549.99,
-    image: "/organic-coffee-beans.png",
-    category: "Food & Beverage",
-    rating: 4.8,
-    inStock: false,
-  },
-  {
-    id: 5,
-    name: "Leather Laptop Bag",
-    price: 7299.99,
-    originalPrice: 9999.0,
-    image: "/leather-laptop-bag.png",
-    category: "Accessories",
-    rating: 4.3,
-    inStock: true,
-  },
-  {
-    id: 6,
-    name: "Wireless Phone Charger",
-    price: 2849.99,
-    image: "/placeholder-os1yn.png",
-    category: "Electronics",
-    rating: 4.1,
-    inStock: true,
-  },
-  {
-    id: 7,
-    name: "Yoga Mat Premium",
-    price: 3749.99,
-    image: "/premium-yoga-mat.png",
-    category: "Sports & Fitness",
-    rating: 4.6,
-    inStock: true,
-  },
-  {
-    id: 8,
-    name: "Stainless Steel Water Bottle",
-    price: 1849.99,
-    originalPrice: 2449.99,
-    image: "/stainless-steel-bottle.png",
-    category: "Sports & Fitness",
-    rating: 4.4,
-    inStock: true,
-  },
-]
-
 export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>(sampleProducts)
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(sampleProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [cartItems, setCartItems] = useState<Product[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
+  const [loading, setLoading] = useState<boolean>(true)
 
-  // Get unique categories
+  useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get("http://localhost:3001/api/products")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = res.data.products.map((p: any) => ({
+        ...p,
+        id: p._id,   
+      }))
+      setProducts(data)
+      setFilteredProducts(data)
+    } catch (err) {
+      console.error("Failed to fetch products:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+  fetchProducts()
+}, [])
+
+  // derive categories dynamically
   const categories = ["All", ...Array.from(new Set(products.map((p) => p.category)))]
 
-  // Handle search functionality
+  // Handle search
   const handleSearch = (query: string) => {
     if (!query.trim()) {
       setFilteredProducts(products)
       return
     }
-
     const filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.category.toLowerCase().includes(query.toLowerCase()),
+        product.category.toLowerCase().includes(query.toLowerCase())
     )
     setFilteredProducts(filtered)
   }
@@ -167,18 +108,22 @@ export default function HomePage() {
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-foreground">Featured Products</h2>
             <Badge variant="secondary" className="text-sm">
-              {filteredProducts.length} products found
+              {loading ? "Loading..." : `${filteredProducts.length} products found`}
             </Badge>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">Loading products...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">No products found matching your search.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                <ProductCard key={product.id || product.id} product={product} onAddToCart={handleAddToCart} />
               ))}
             </div>
           )}
