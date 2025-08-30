@@ -1,76 +1,95 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useCart } from "@/context/CartContext"
 import axios from "axios"
-import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import ProductCard, { type Product } from "@/components/ProductCard"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useSearchParams } from "next/navigation"
 
 export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [backendProducts, setBackendProducts] = useState<Product[]>([])
+  const [adminProducts, setAdminProducts] = useState<Product[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [cartItems, setCartItems] = useState<Product[]>([])
+  const { cartItems, addToCart } = useCart()
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
   const [loading, setLoading] = useState<boolean>(true)
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const res = await axios.get("http://localhost:3001/api/products")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = res.data.products.map((p: any) => ({
-        ...p,
-        id: p._id,   
-      }))
-      setProducts(data)
-      setFilteredProducts(data)
-    } catch (err) {
-      console.error("Failed to fetch products:", err)
-    } finally {
-      setLoading(false)
+    const fetchProducts = async () => {
+      try {
+        // Fetch backend products
+        const res = await axios.get("http://localhost:3001/api/products")
+        const backendData = res.data.products.map((p: any) => ({
+          ...p,
+          id: p._id,   
+        }))
+        setBackendProducts(backendData)
+        
+        // Load admin products from localStorage
+        if (typeof window !== "undefined") {
+          const savedAdminProducts = localStorage.getItem("adminProducts")
+          if (savedAdminProducts) {
+            const adminData = JSON.parse(savedAdminProducts)
+            setAdminProducts(adminData)
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch products:", err)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
-  fetchProducts()
-}, [])
+    fetchProducts()
+  }, [])
+
+  // Combine backend and admin products
+  useEffect(() => {
+    const combined = [...backendProducts, ...adminProducts]
+    setAllProducts(combined)
+    setFilteredProducts(combined)
+  }, [backendProducts, adminProducts])
+
+  // Handle search from URL params
+  useEffect(() => {
+    const searchQuery = searchParams.get('search')
+    if (searchQuery) {
+      const filtered = allProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredProducts(filtered)
+    } else {
+      setFilteredProducts(allProducts)
+    }
+  }, [searchParams, allProducts])
 
   // derive categories dynamically
-  const categories = ["All", ...Array.from(new Set(products.map((p) => p.category)))]
-
-  // Handle search
-  const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      setFilteredProducts(products)
-      return
-    }
-    const filtered = products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.category.toLowerCase().includes(query.toLowerCase())
-    )
-    setFilteredProducts(filtered)
-  }
+  const categories = ["All", ...Array.from(new Set(allProducts.map((p) => p.category)))]
 
   // Handle category filter
   const handleCategoryFilter = (category: string) => {
     setSelectedCategory(category)
     if (category === "All") {
-      setFilteredProducts(products)
+      setFilteredProducts(allProducts)
     } else {
-      setFilteredProducts(products.filter((p) => p.category === category))
+      setFilteredProducts(allProducts.filter((p) => p.category === category))
     }
   }
 
   // Handle add to cart
   const handleAddToCart = (product: Product) => {
-    setCartItems((prev) => [...prev, product])
+    addToCart(product)
     console.log(`Added ${product.name} to cart`)
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar cartItemCount={cartItems.length} onSearch={handleSearch} />
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

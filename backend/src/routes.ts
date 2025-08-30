@@ -12,8 +12,10 @@ import {
 import { requireAuth } from "./middleware/auth";
 import { placeOrder, getMyOrders, getOrderById } from "./controllers/orderController";
 
+// Create router instance
 const router = Router();
 
+// Set up routes
 router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh-token", refreshToken);

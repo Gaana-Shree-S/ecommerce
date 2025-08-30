@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Product from "./models/Product";
+import User from "./models/User";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -104,7 +106,17 @@ async function seed() {
     await mongoose.connect(process.env.MONGO_URI!)
     await Product.deleteMany({})
     await Product.insertMany(sampleProducts)
-    console.log(" Sample products added with descriptions")
+
+    // Seed admin user
+    await User.deleteMany({ email: "admin@swadeshi.com" })
+    const adminPassword = await bcrypt.hash("admin123", 10)
+    await User.create({
+      name: "Admin",
+      email: "admin@swadeshi.com",
+      password: adminPassword,
+      isAdmin: true,
+    })
+    console.log("Sample products and admin user added.")
     process.exit()
   } catch (err) {
     console.error(err)
