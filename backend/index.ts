@@ -9,9 +9,17 @@ dotenv.config();
 const app = express();
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:3000", 
-  credentials: true, 
+  origin: true, // Allow all origins for development
+  credentials: true,
 }));
+// Explicitly set CORS headers for all responses
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
 app.use(express.json());
 app.use("/api", router);
 const PORT = process.env.BACKEND_URL;

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Product } from "@/components/ProductCard";
 
 export interface CartItem extends Product {
@@ -11,18 +11,35 @@ export interface CartItem extends Product {
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product) => void;
-  removeFromCart: (id: number) => void;
+  removeFromCart: (id: string | number) => void;
   clearCart: () => void;
-  updateQuantity: (id: number, quantity: number) => void;
-  updateDeliveryOption: (id: number, deliveryOptionId: number) => void;
+  updateQuantity: (id: string | number, quantity: number) => void;
+  updateDeliveryOption: (id: string | number, deliveryOptionId: number) => void;
+  isAuthenticated: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Initialize only after client-side mount to prevent hydration issues
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      // Clear orders when server starts (component mounts)
+      localStorage.removeItem("orders");
+      // Check if user is authenticated
+      const user = localStorage.getItem("user");
+      setIsAuthenticated(!!user);
+    }
+  }, []);
 
   const addToCart = (product: Product) => {
+    if (!isClient) return;
+    
     setCartItems((prev) => {
       const existing = prev.find((p) => p.id === product.id);
       if (existing) {
@@ -39,20 +56,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string | number) => {
+    if (!isClient) return;
+    
     setCartItems((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const clearCart = () => setCartItems([]);
+  const clearCart = () => {
+    if (!isClient) return;
+    
+    setCartItems([]);
+  };
 
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity < 1) return;
+  const updateQuantity = (id: string | number, quantity: number) => {
+    if (!isClient || quantity < 1) return;
+    
     setCartItems((prev) =>
       prev.map((p) => (p.id === id ? { ...p, quantity } : p))
     );
   };
 
-  const updateDeliveryOption = (id: number, deliveryOptionId: number) => {
+  const updateDeliveryOption = (id: string | number, deliveryOptionId: number) => {
+    if (!isClient) return;
+    
     setCartItems((prev) =>
       prev.map((p) => (p.id === id ? { ...p, deliveryOptionId } : p))
     );
@@ -67,6 +93,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         updateQuantity,
         updateDeliveryOption,
+        isAuthenticated,
       }}
     >
       {children}

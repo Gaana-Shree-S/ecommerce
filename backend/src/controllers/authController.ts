@@ -1,3 +1,12 @@
+// Simple admin login endpoint
+export const adminLogin = async (req: Request, res: Response) => {
+  const { name, password } = req.body;
+  if (name === "admin" && password === "admin123") {
+    // You can set a session, token, or just return success
+    return res.json({ success: true, admin: true, message: "Admin login successful" });
+  }
+  return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+};
 import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/User";

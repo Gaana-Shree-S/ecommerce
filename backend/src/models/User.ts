@@ -4,7 +4,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  refreshTokens: string[]; 
+  refreshTokens: string[];
+  isAdmin?: boolean;
 }
 
 const userSchema = new Schema<IUser>(
@@ -13,6 +14,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
     refreshTokens: { type: [String], default: [] },
+    isAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -24,28 +24,40 @@ export default function AuthPage() {
       return
     }
 
-    // For login
-    let userName = name
+    // For login, require user to enter credentials
     if (isLogin) {
-      const storedUser = localStorage.getItem("user")
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser)
-        userName = parsedUser.name || "User"
-      } else {
-        userName = "User"
+      if (!email || !password) {
+        alert("Please enter email and password to login.");
+        return;
       }
+      // Simulate login: only allow if user previously registered
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        alert("No user found. Please register first.");
+        return;
+      }
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser.email !== email) {
+        alert("Email does not match registered user.");
+        return;
+      }
+      login(parsedUser);
+      router.push("/");
+      return;
     }
-
-    const user = {
-      name: userName,
-      email,
+    // For register
+    if (!name || !email || !password || !confirmPassword) {
+      alert("Please fill all fields to register.");
+      return;
     }
-
-    login(user)
-
-    localStorage.setItem("user", JSON.stringify(user))
-
-    router.push("/")
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+    const user = { name, email };
+    login(user);
+    localStorage.setItem("user", JSON.stringify(user));
+    router.push("/");
   }
 
   return (

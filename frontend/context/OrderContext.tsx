@@ -1,14 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export interface OrderItem {
-  id: number;
+  id: string | number;
   name: string;
   price: number;
   quantity: number;
   image: string;
-   deliveryOptionId?: number;
+  deliveryOptionId?: number;
 }
 
 export interface OrderData {
@@ -21,38 +21,43 @@ export interface OrderData {
 }
 
 interface OrderContextType {
-  latestOrder: OrderData | null;
-  setLatestOrder: (order: OrderData) => void;
-  clearOrder: () => void;
+  orders: OrderData[];
+  addOrder: (order: OrderData) => void;
+  clearOrders: () => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider = ({ children }: { children: ReactNode }) => {
-  const [latestOrder, setLatestOrderState] = useState<OrderData | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("latestOrder");
-      return stored ? JSON.parse(stored) : null;
-    }
-    return null;
-  });
+  const [orders, setOrders] = useState<OrderData[]>([]);
 
-  const setLatestOrder = (order: OrderData) => {
-    setLatestOrderState(order);
+  // Clear orders when server starts (component mounts)
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("latestOrder", JSON.stringify(order));
+      localStorage.removeItem("orders");
+      setOrders([]);
     }
+  }, []);
+
+  const addOrder = (order: OrderData) => {
+    setOrders((prev) => {
+      const updated = [...prev, order];
+      if (typeof window !== "undefined") {
+        localStorage.setItem("orders", JSON.stringify(updated));
+      }
+      return updated;
+    });
   };
 
-  const clearOrder = () => {
-    setLatestOrderState(null);
+  const clearOrders = () => {
+    setOrders([]);
     if (typeof window !== "undefined") {
-      localStorage.removeItem("latestOrder");
+      localStorage.removeItem("orders");
     }
   };
 
   return (
-    <OrderContext.Provider value={{ latestOrder, setLatestOrder, clearOrder }}>
+    <OrderContext.Provider value={{ orders, addOrder, clearOrders }}>
       {children}
     </OrderContext.Provider>
   );

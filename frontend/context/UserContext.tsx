@@ -12,6 +12,7 @@ type UserContextType = {
   loading: boolean;
   login: (userData: User) => void;
   logout: () => void;
+  isAuthenticated: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -19,28 +20,38 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
-  // Initialize from localStorage 
+  // Initialize user from localStorage only after client-side mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
     setLoading(false);
   }, []);
 
   const login = (userData: User) => {
     setUser(userData); 
-    localStorage.setItem("user", JSON.stringify(userData));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(userData));
+    }
   };
 
   const logout = () => {
     setUser(null); 
-    localStorage.removeItem("user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user");
+    }
   };
 
+  const isAuthenticated = !!user;
+
   return (
-    <UserContext.Provider value={{ user, loading, login, logout }}>
+    <UserContext.Provider value={{ user, loading, login, logout, isAuthenticated }}>
       {children}
     </UserContext.Provider>
   );
